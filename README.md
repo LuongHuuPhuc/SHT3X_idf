@@ -1,0 +1,3 @@
+# SHT3X SENSOR FOR TEMPERATURE AND HUMIDITY 
+## Author: Luong Huu Phuc
+## Date: 2025/06/29
