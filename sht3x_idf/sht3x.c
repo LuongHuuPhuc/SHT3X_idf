@@ -113,7 +113,7 @@ sht3x_status_t sht3x_enable_heater(sht3x_handle_t *handle, bool enable){
   }
 
   uint16_t cmd = (enable == true) ? SHT3X_CMD_HEATER_ENABLE : SHT3X_CMD_HEATER_DISABLE;
-  if(i2cdev_write_command(&handle->i2c_dev, handle->i2c_addr, cmd, NULL)){
+  if(i2c_dev_write_command_16(&handle->i2c_dev, handle->i2c_addr, cmd, NULL)){
     handle->heater = enable; //Cap nhat trang thai khi thay doi thanh cong
     return SHT3X_OK;
   }
@@ -124,7 +124,7 @@ sht3x_status_t sht3x_soft_reset(sht3x_handle_t *handle){
   if(handle == NULL)
     return SHT3X_ERR_NULL_PTR;
 
-  bool ok = i2cdev_write_command(&handle->i2c_dev, handle->i2c_addr, SHT3X_CMD_SOFT_RESET, NULL);
+  bool ok = i2c_dev_write_command_16(&handle->i2c_dev, handle->i2c_addr, SHT3X_CMD_SOFT_RESET, NULL);
 
   if(ok){
     //Reset lai trang thai trong handle
@@ -188,7 +188,7 @@ sht3x_status_t sht3x_stop_periodart(sht3x_handle_t *handle){
   }
 
   //Gui lenh BREAK de dung che do period
-  if(!i2cdev_write_command(&handle->i2c_dev, handle->i2c_addr, SHT3X_CMD_STOP_PERIOD, NULL)){
+  if(!i2c_dev_write_command_16(&handle->i2c_dev, handle->i2c_addr, SHT3X_CMD_STOP_PERIOD, NULL)){
     return SHT3X_ERR_I2C;
   }
 
@@ -237,7 +237,7 @@ sht3x_status_t sht3x_start_single_shot(sht3x_handle_t *handle, sht3x_data_t *dat
   uint16_t cmd = get_single_shot_cmd(handle);
 
   //Gui lenh do single_shot
-  if(i2cdev_write_command(&handle->i2c_dev, handle->i2c_addr, cmd, NULL) != ESP_OK){
+  if(i2c_dev_write_command_16(&handle->i2c_dev, handle->i2c_addr, cmd, NULL) != ESP_OK){
     handle->state = sht3x_status_idle;
     ESP_LOGE("SHT3X", "Loi ghi command !");
     return SHT3X_ERR_I2C;
@@ -267,7 +267,7 @@ sht3x_status_t sht3x_start_single_shot(sht3x_handle_t *handle, sht3x_data_t *dat
 
   //Doc du lieu: 6 bytes (Temp MSB, Temp LSB, CRC) + (Humi MSB, Humi LSB, CRC)
   uint8_t raw_data[6] = {0};
-  if(i2cdev_read_bytes_data(&handle->i2c_dev, handle->i2c_addr, raw_data, 6, NULL) != ESP_OK){
+  if(i2c_dev_read_data(&handle->i2c_dev, handle->i2c_addr, raw_data, 6, NULL) != ESP_OK){
     handle->state = sht3x_status_idle;
     ESP_LOGE("SHT3X", "Loi doc du lieu !");
     return SHT3X_ERR_I2C;
@@ -301,7 +301,7 @@ sht3x_status_t sht3x_start_period(sht3x_handle_t *handle){
 
   uint16_t cmd = get_period_cmd(handle);
   
-  if(!i2cdev_write_command(&handle->i2c_dev, handle->i2c_addr, cmd, NULL)){
+  if(!i2c_dev_write_command_16(&handle->i2c_dev, handle->i2c_addr, cmd, NULL)){
     ESP_LOGE("SHT3X", "Failed to send periodic measurement command: 0x%04X", cmd);
     handle->state = sht3x_status_idle;
     return SHT3X_ERR_I2C;
@@ -321,14 +321,14 @@ sht3x_status_t sht3x_fetch_data(sht3x_handle_t *handle, sht3x_data_t *data){
   }
 
   //Gui lenh fetch 
-  if(!i2cdev_write_command(&handle->i2c_dev, handle->i2c_addr, SHT3X_CMD_FETCH_DATA, NULL)){
+  if(!i2c_dev_write_command_16(&handle->i2c_dev, handle->i2c_addr, SHT3X_CMD_FETCH_DATA, NULL)){
     handle->state = sht3x_status_idle;
     return SHT3X_ERR_I2C;
   }
 
   //Doc du lieu
   uint8_t raw_data[6] = {0};
-  if(!i2cdev_read_bytes_data(&handle->i2c_dev, handle->i2c_addr, raw_data, 6, NULL)){
+  if(!i2c_dev_read_data(&handle->i2c_dev, handle->i2c_addr, raw_data, 6, NULL)){
     handle->state = sht3x_status_idle;
     return SHT3X_ERR_I2C;
   }
@@ -357,13 +357,13 @@ sht3x_status_t sht3x_read_status(sht3x_handle_t *handle, uint16_t *status){
   }
 
   //Gui lenh doc status register 
-  if(!i2cdev_write_command(&handle->i2c_dev, handle->i2c_addr, SHT3X_CMD_READ_STATUS, NULL)){
+  if(!i2c_dev_write_command_16(&handle->i2c_dev, handle->i2c_addr, SHT3X_CMD_READ_STATUS, NULL)){
     return SHT3X_ERR_I2C;
   }
 
   //Doc 2 byte status + 1 byte CRC
   uint8_t raw[3] = {0};
-  if(!i2cdev_read_bytes_data(&handle->i2c_dev, handle->i2c_addr, raw, 3, NULL)){
+  if(!i2c_dev_read_data(&handle->i2c_dev, handle->i2c_addr, raw, 3, NULL)){
     return SHT3X_ERR_I2C;
   }
 
@@ -384,7 +384,7 @@ sht3x_status_t sht3x_clear_status(sht3x_handle_t *handle){
   }
 
   //Gui lenh clear status register
-  if(!i2cdev_write_command(&handle->i2c_dev, handle->i2c_addr, SHT3X_CMD_CLEAR_STATUS, NULL)){
+  if(!i2c_dev_write_command_16(&handle->i2c_dev, handle->i2c_addr, SHT3X_CMD_CLEAR_STATUS, NULL)){
     return SHT3X_ERR_I2C;
   }
   return SHT3X_OK;
@@ -401,7 +401,7 @@ sht3x_status_t sht3x_start_art(sht3x_handle_t *handle){
   handle->freq = sht3x_frequency_4_hz; //ART su dung tan so 4Hz
 
   //Gui lenh ART  
-  if(!i2cdev_write_command(&handle->i2c_dev, handle->i2c_addr, SHT3X_CMD_ART_MODE, NULL)){
+  if(!i2c_dev_write_command_16(&handle->i2c_dev, handle->i2c_addr, SHT3X_CMD_ART_MODE, NULL)){
     handle->state = sht3x_status_idle;
     return SHT3X_ERR_I2C;
   }
