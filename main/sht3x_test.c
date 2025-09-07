@@ -58,7 +58,7 @@ void sht3x_task(void *pvParameter){
 }
 
 void app_main(void){
-  ESP_ERROR_CHECK(I2Cdev_initialize());
+  ESP_ERROR_CHECK(i2c_dev_initialize());
   if(sht3x_install() != SHT3X_OK){
     ESP_LOGE(TAG, "Loi khoi tao SHT3X !");
     for(;;){
